@@ -143,7 +143,7 @@ ax1 = fig1.add_subplot(projection='3d')
 if molecule.upper() == "H2O":
     surface = ax1.plot_surface(xx, yy, zz, cmap=cm.plasma , linewidth=0.5, rstride=6, cstride=1, edgecolors="k",alpha=.8,vmin=e_min)
 else:
-    # for H2S, plot from r = 0.9 onwards, ie. (xx[:,6:]), in order to make well more visible
+    # for H2S, plot from r = 0.9 onwards, ie. (xx[:,6:]) etc., in order to make the well more visible
     surface = ax1.plot_surface(xx[:,6:], yy[:,6:], zz[:,6:], cmap=cm.plasma , linewidth=0.5, rstride=6, cstride=1, edgecolors="k",alpha=.8,vmin=e_min)
 
 fig1.colorbar(surface, shrink=0.5, aspect=5)
@@ -172,6 +172,7 @@ ax3 = fig3.add_subplot(projection='3d')
 if molecule.upper() == "H2O":
     surface = ax3.plot_surface(xx, yy, zz, cmap=cm.plasma , linewidth=0.5, rstride=6, cstride=1, edgecolors="k",alpha=.5,vmin=e_min)
 else:
+    # for H2S, plot from r = 0.9 onwards, ie. (xx[:,6:]) etc., in order to make the well more visible
     surface = ax3.plot_surface(xx[:,6:], yy[:,6:], zz[:,6:], cmap=cm.plasma , linewidth=0.5, rstride=6, cstride=1, edgecolors="k",alpha=.5,vmin=e_min)
 fig3.colorbar(surface, shrink=0.5, aspect=5)
 ax3.set_xlabel("Bond length/Å")
