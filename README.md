@@ -11,7 +11,3 @@ Then to run just simply run main.py with python:
 ```
 python main.py
 ```
-To change molecule, edit the following line in the code and change the string to either "H2S" or "H2O":
-```python
-molecule = "H2S"
-```
