@@ -154,7 +154,7 @@ ax1.set_title(f"Potential Energy Surface of {molecule}")
 plt.show()
 
 # show comparison between fit and data
-z_fit = vib_model((vib_r_well*angstrom,vib_theta_well*np.pi/180), *popt)/43.60e-19+e_min
+z_fit = vib_model((vib_r_well*angstrom,vib_theta_well*np.pi/180), *popt)/hartree_to_joule+e_min
 
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(projection='3d')
