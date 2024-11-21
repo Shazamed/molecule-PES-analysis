@@ -7,11 +7,12 @@ import natsort
 from matplotlib import cm
 
 # conversion
-m_u = 1.660539068e-27
+m_u = 1.660539068e-27 # in kg
+angstrom = 1e-10 # in kg
+hartree_to_joule = 43.60e-19 # convert hartree to joule
+speed_of_light_cm = 2.998e10 # speed of light in cm/s
 
 UPPER_E = 0.025 # upper bound of energies above the minima used for fitting
-
-molecule = "H2S"
 
 h2o_directory_path = "./part2programming/Ex2/H2Ooutfiles/"
 h2s_directory_path = "./part2programming/Ex2/H2Soutfiles/"
@@ -55,21 +56,21 @@ def extract_values(directory_path, files_list):
 
 def gen_meshgrid(X,Y,Z):
     '''Generates a 2D meshgrid for the matplotlib plot_surface() function
-    xx =
+    xx (bond length) =
     [[0.7  0.75 0.8  ... 1.8  1.85 1.9 ] 
     [0.7  0.75 0.8  ... 1.8  1.85 1.9 ]
     ...
     [0.7  0.75 0.8  ... 1.8  1.85 1.9 ]
     [0.7  0.75 0.8  ... 1.8  1.85 1.9 ]]
     
-    yy =
+    yy (bond angle) =
     [[ 70.  70.  70. ...  70.  70.  70.]
     [ 71.  71.  71. ...  71.  71.  71.]
     ...
     [159. 159. 159. ... 159. 159. 159.]
     [160. 160. 160. ... 160. 160. 160.]]
 
-    zz is a 2D array of energies that has the values of yy and xx at that position:
+    zz is a 2D array of energies with the corresponding xx (bond length) and yy (bond angle) at that position:
     zz =
     [[-75.70705381 -75.82565047 ... -75.61899215]
     [-75.71098123 -75.82920916 ...   -75.6174709]
@@ -82,6 +83,7 @@ def gen_meshgrid(X,Y,Z):
     return xx, yy, zz
 
 def find_equilibrium(xx,yy,zz):
+    '''outputs equilibrium bond length, angle and energy'''
     e_min = zz.min() # energy minimum
     min_coord = np.where(zz==e_min) # find coordinates of minimum
     x_coord, y_coord = min_coord[0][0], min_coord[1][0] # get x and y coords of min
@@ -93,17 +95,18 @@ def find_equilibrium(xx,yy,zz):
     return (bond_length_eq,bond_angle_eq,e_min)
 
 def gen_fit_values(xx,yy,zz, r_eq, theta_eq, e_o):
-    '''Get arrays of energies, bond lengths and bond angles to be used in the fitting
+    '''Return arrays of energies, bond lengths and bond angles to be used in the fitting
     '''
     well_coords = np.where(zz<=e_o+UPPER_E) # set energy threshold above well to select points
     e_array  = zz[*well_coords]
-    vib_r_array = xx[*well_coords] - r_eq
-    vib_theta_array = yy[*well_coords] - theta_eq
+    vib_r_array = xx[*well_coords] - r_eq # gives r - r_e
+    vib_theta_array = yy[*well_coords] - theta_eq # gives theta - theta_e
     return e_array, vib_r_array, vib_theta_array
 
 def calc_freq(k_r, k_theta, r_eq):
-    v_1 = (1/(2*np.pi) * (k_r/(2*m_u))**0.5)
-    v_2 = (1/(2*np.pi) * (k_theta/(0.5*m_u*(r_eq*1e-10)**2))**0.5)
+    '''Returns v_1 and v_2 in Hz'''
+    v_1 = (1/(2*np.pi) * (k_r/(2*m_u))**0.5) 
+    v_2 = (1/(2*np.pi) * (k_theta/(0.5*m_u*(r_eq*angstrom)**2))**0.5)
     return v_1, v_2
 
 
@@ -126,12 +129,12 @@ Z = molecule_array[:,2] # gives array of energies
 xx, yy, zz = gen_meshgrid(X,Y,Z) # meshgrid of bond length (xx), bond angles (yy) that has corresponding values of energies (zz) at a given coord.
 
 bond_length_eq, bond_angle_eq, e_min = find_equilibrium(xx,yy,zz)
-e_well, vib_r_well, vib_theta_well = gen_fit_values(xx,yy,zz,bond_length_eq, bond_angle_eq, e_min)
-popt, pcov = curve_fit(vib_model, (vib_r_well*1e-10,vib_theta_well*np.pi/180), (e_well-e_min)*43.60e-19)
-vib_freq_1, vib_freq_2 = calc_freq(popt[0], popt[1], bond_length_eq)
+e_well, vib_r_well, vib_theta_well = gen_fit_values(xx,yy,zz,bond_length_eq, bond_angle_eq, e_min) # values of vib_r in angstrom, vib_theta in degrees and e_min in hartree
+popt, pcov = curve_fit(vib_model, (vib_r_well*angstrom,vib_theta_well*np.pi/180), (e_well-e_min)*hartree_to_joule) # popt contains k_r in N/m and k_theta in N m/rad
+vib_freq_1, vib_freq_2 = calc_freq(popt[0], popt[1], bond_length_eq) # vib_freq_1 and vib_freq_2 in Hz
 
-print(f'Stretching frequency, ν_1 = {vib_freq_1*3.33565e-11:.2f} cm^-1')
-print(f'Bending frequency, ν_2 = {vib_freq_2*3.33565e-11:.2f} cm^-1')
+print(f'Stretching frequency, ν_1 = {vib_freq_1/speed_of_light_cm:.2f} cm^-1')
+print(f'Bending frequency, ν_2 = {vib_freq_2/speed_of_light_cm:.2f} cm^-1')
 
 
 # plotting surface plot
@@ -151,7 +154,7 @@ ax1.set_title(f"Potential Energy Surface of {molecule}")
 plt.show()
 
 # show comparison between fit and data
-z_fit = vib_model((vib_r_well*1e-10,vib_theta_well*np.pi/180), *popt)/43.60e-19+e_min
+z_fit = vib_model((vib_r_well*angstrom,vib_theta_well*np.pi/180), *popt)/43.60e-19+e_min
 
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(projection='3d')

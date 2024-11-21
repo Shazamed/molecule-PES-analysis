@@ -5,7 +5,9 @@ The script extracts data from a set of gaussian output files in the part2program
 
 The script will determine the equilibrium bond angle, length and energy of the molecule from the given set of data. The energies are fitted and used to determined the vibrational frequencies of the stretching and bending mode of the molecule.
 ## Usage
-To run just simply run main.py with python:
+Navigate to the directory where the main.py and part2programming folder are both located
+
+Then to run just simply run main.py with python:
 ```
 python main.py
 ```
